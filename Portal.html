@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Portal de Controle de Atividades</title>
+  <style>
+    .form-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .form-row label {
+      margin-right: 10px;
+    }
+
+    .editar-button {
+      background-color: orange;
+      color: gray;
+      margin-right: 5px;
+    }
+
+    .excluir-button {
+      background-color: red;
+      color: white;
+    }
+    
+    .titulo {    
+      color: blue;
+      padding: 10px;
+text-align: center;
+  margin: 0 auto;
+    }
+.footer {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  padding: 10px;
+  background-color: #f1f1f1;
+  color: #555;
+}
+
+  </style>
+  <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.2/FileSaver.min.js"></script>
+  <script>
+    var atividades = [];
+
+    function adicionarAtividade() {
+      var circuito = document.getElementById("circuito").value;
+      var tipoAtividade = document.getElementById("tipo-atividade").value;
+      var tecnico = document.getElementById("tecnico").value;
+      var data = document.getElementById("data").value;
+      var horarioInicio = document.getElementById("horario-inicio").value;
+      var horarioTermino = document.getElementById("horario-termino").value;
+      var status = document.getElementById("status").value;
+      var observacao = document.getElementById("observacao").value;
+
+      var atividade = {
+        circuito: circuito,
+        tipoAtividade: tipoAtividade,
+        tecnico: tecnico,
+        data: data,
+        horarioInicio: horarioInicio,
+        horarioTermino: horarioTermino,
+        status: status,
+        observacao: observacao
+      };
+
+      atividades.push(atividade);
+
+      var tabela = document.getElementById("tabela-atividades");
+      var newRow = tabela.insertRow();
+
+      var cell1 = newRow.insertCell(0);
+      cell1.innerHTML = circuito;
+
+      var cell2 = newRow.insertCell(1);
+      cell2.innerHTML = tipoAtividade;
+
+      var cell3 = newRow.insertCell(2);
+      cell3.innerHTML = tecnico;
+
+      var cell4 = newRow.insertCell(3);
+      cell4.innerHTML = data;
+
+      var cell5 = newRow.insertCell(4);
+      cell5.innerHTML = horarioInicio;
+
+      var cell6 = newRow.insertCell(5);
+      cell6.innerHTML = horarioTermino;
+
+      var cell7 = newRow.insertCell(6);
+      cell7.innerHTML = status;
+
+      var cell8 = newRow.insertCell(7);
+      cell8.innerHTML = observacao;
+
+      var cell9 = newRow.insertCell(8);
+      cell9.innerHTML = '<button onclick="editarAtividade(this)" class="editar-button">Editar</button>' +
+        '<button onclick="excluirAtividade(this)" class="excluir-button">Excluir</button>';
+
+      salvarAtividades();
+    }
+
+    function editarAtividade(button) {
+      var row = button.parentNode.parentNode;
+      var cells = row.getElementsByTagName("td");
+
+      var circuito = cells[0].innerHTML;
+      var tipoAtividade = cells[1].innerHTML;
+      var tecnico = cells[2].innerHTML;
+      var data = cells[3].innerHTML;
+      var horarioInicio = cells[4].innerHTML;
+      var horarioTermino = cells[5].innerHTML;
+      var status = cells[6].innerHTML;
+      var observacao = cells[7].innerHTML;
+
+      document.getElementById("circuito").value = circuito;
+      document.getElementById("tipo-atividade").value = tipoAtividade;
+      document.getElementById("tecnico").value = tecnico;
+      document.getElementById("data").value = data;
+      document.getElementById("horario-inicio").value = horarioInicio;
+      document.getElementById("horario-termino").value = horarioTermino;
+      document.getElementById("status").value = status;
+      document.getElementById("observacao").value = observacao;
+
+      row.remove();
+    }
+
+    function excluirAtividade(button) {
+      var row = button.parentNode.parentNode;
+      var rowIndex = row.rowIndex;
+
+      atividades.splice(rowIndex - 1, 1);
+      row.remove();
+
+      salvarAtividades();
+    }
+
+    function exportarParaExcel() {
+      var workbook = XLSX.utils.book_new();
+      var worksheet = XLSX.utils.json_to_sheet(atividades);
+      var sheetName = "Atividades";
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+      var workbookOutput = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      saveAs(new Blob([workbookOutput], { type: 'application/octet-stream' }), sheetName + '.xlsx');
+    }
+
+    function salvarAtividades() {
+      localStorage.setItem('atividades', JSON.stringify(atividades));
+    }
+
+    function carregarAtividades() {
+      var atividadesSalvas = localStorage.getItem('atividades');
+
+      if (atividadesSalvas) {
+        atividades = JSON.parse(atividadesSalvas);
+
+        var tabela = document.getElementById("tabela-atividades");
+
+        atividades.forEach(function(atividade) {
+          var newRow = tabela.insertRow();
+
+          var cell1 = newRow.insertCell(0);
+          cell1.innerHTML = atividade.circuito;
+
+          var cell2 = newRow.insertCell(1);
+          cell2.innerHTML = atividade.tipoAtividade;
+
+          var cell3 = newRow.insertCell(2);
+          cell3.innerHTML = atividade.tecnico;
+
+          var cell4 = newRow.insertCell(3);
+          cell4.innerHTML = atividade.data;
+
+          var cell5 = newRow.insertCell(4);
+          cell5.innerHTML = atividade.horarioInicio;
+
+          var cell6 = newRow.insertCell(5);
+          cell6.innerHTML = atividade.horarioTermino;
+
+          var cell7 = newRow.insertCell(6);
+          cell7.innerHTML = atividade.status;
+
+          var cell8 = newRow.insertCell(7);
+          cell8.innerHTML = atividade.observacao;
+
+          var cell9 = newRow.insertCell(8);
+          cell9.innerHTML = '<button onclick="editarAtividade(this)" class="editar-button">Editar</button>' +
+            '<button onclick="excluirAtividade(this)" class="excluir-button">Excluir</button>';
+        });
+      }
+    }
+
+    function limparAtividades() {
+      atividades = [];
+
+      var tabela = document.getElementById("tabela-atividades");
+      var rowCount = tabela.rows.length;
+
+      for (var i = rowCount - 1; i > 0; i--) {
+        tabela.deleteRow(i);
+      }
+
+      salvarAtividades();
+    }
+
+    window.onload = carregarAtividades;
+  </script>
+</head>
+<body>
+    <h1 class="titulo">Portal de Controle de Atividades - Dados Telemont</h1>
+ 
+  <div class="form-row">
+    <label for="circuito">Circuito:</label>
+    <input type="text" id="circuito">
+  </div>
+
+  <div class="form-row">
+    <label for="tipo-atividade">Tipo de Atividade:</label>
+    <select id="tipo-atividade">
+      <option value="Ativação">Ativação</option>
+      <option value="Ativação POVE">Ativação POVE</option>
+      <option value="AltMeio">AltMeio</option>
+      <option value="Reparo">Reparo</option>
+      <option value="Preventiva">Preventiva</option>
+      <option value="Retirada">Retirada</option>
+      <option value="Retirada de Jumper">Retirada de Jumper</option>
+      <option value="Vistoria">Vistoria</option>
+      <option value="Teste Planta Interna">Teste Planta Interna</option>
+      <option value="Jumper Gpon">Jumper Gpon</option>
+      <option value="Jumper Planta Interna">Jumper Planta Interna</option>
+      <option value="Jumper">Jumper</option>
+    </select>
+  </div>
+
+  <div class="form-row">
+    <label for="tecnico">Técnico:</label>
+    <select id="tecnico">
+      <option value="Josemir">Josemir</option>
+      <option value="Lucas Cois">Lucas Cois</option>
+      <option value="Edemar">Edemar</option>
+      <option value="Eduardo Miranda">Eduardo Miranda</option>
+      <option value="Hudson">Hudson</option>
+      <option value="Gilvan">Gilvan</option>
+      <option value="Gledson">Gledson</option>
+      <option value="Cleiton">Cleiton</option>
+      <option value="Agnaldo">Agnaldo</option>
+      <option value="Paulo Santos">Paulo Santos</option>
+      <option value="Ricardo Borges">Ricardo Borges</option>
+      <option value="Daniel Coutinho">Daniel Coutinho</option>
+      <option value="Marildo">Marildo</option>
+    </select>
+  </div>
+
+  <div class="form-row">
+    <label for="data">Data:</label>
+    <input type="date" id="data">
+  </div>
+
+  <div class="form-row">
+    <label for="horario-inicio">Horário de Início:</label>
+    <input type="time" id="horario-inicio">
+  </div>
+
+  <div class="form-row">
+    <label for="horario-termino">Horário de Término:</label>
+    <input type="time" id="horario-termino">
+  </div>
+
+  <div class="form-row">
+    <label for="status">Status:</label>
+    <select id="status">
+      <option value="Concluido com sucesso">Concluído com sucesso</option>
+      <option value="Concluido sem sucesso">Concluído sem sucesso</option>
+      <option value="No local">No local</option>
+      <option value="Abortado">Abortado</option>
+      <option value="Cancelado">Cancelado</option>
+<option value="Agendado">Agendado</option>
+      <option value="Reagendado">Reagendado</option>
+    </select>
+  </div>
+
+  <div class="form-row">
+    <label for="Operador CL">Operador CL:</label>
+    <select id="Operador CL">
+<option value="Edson Silva">Edson Silva</option>
+<option value="David Junior">David Junior</option>
+<option value="Maira Gomes">Maira Gomes</option>
+<option value="Welky Alves">Welky Alves</option>
+<option value="Solange Rosa">Solange Rosa</option>
+<option value="Alexandre Raimond">Alexandre Raimond</option>
+<option value="Sidnei Alexandre">Sidnei Alexandre</option>
+<option value="Jessica Medeiros">Jessica Medeiros</option>
+ </select>
+  </div>
+
+  <div class="form-row">
+    <label for="observacao">Observação:</label>
+    <textarea id="observacao"></textarea>
+  </div>
+
+  <button onclick="adicionarAtividade()">Adicionar Atividade</button>
+  <button onclick="exportarParaExcel()">Exportar para Excel</button>
+
+
+  <table id="tabela-atividades">
+    <tr>
+      <th>Circuito</th>
+      <th>Tipo de Atividade</th>
+      <th>Técnico</th>
+      <th>Data</th>
+      <th>Horário de Início</th>
+      <th>Horário de Término</th>
+      <th>Status</th>
+      <th>Observação</th>
+      <th>Ações</th>
+    </tr>
+  </table>
+<div class="footer">
+  By Andrew Miteze
+</div>
+</body>
+</html>
